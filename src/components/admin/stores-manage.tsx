@@ -22,12 +22,14 @@ import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { getAllStores } from '@/lib/actions/store.action'
 import DialogStoreDelete from '../dialog/dialog-store-delete'
+import DialogStoreEdit from '../dialog/dialog-store-edit'
 
 interface Store {
   _id: string
   name: string
   address: string
   location: string
+  storeId: string
   latitude?: number
   longitude?: number
   parking: string
@@ -45,8 +47,13 @@ export default function StoresManage() {
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
 
+  // 삭제 다이얼로그 상태
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [storeToDelete, setStoreToDelete] = useState<Store | null>(null)
+
+  // 수정 다이얼로그 상태
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [storeToEdit, setStoreToEdit] = useState<Store | null>(null)
 
   // 데이터 가져오기
   const fetchStores = async () => {
@@ -71,6 +78,20 @@ export default function StoresManage() {
   useEffect(() => {
     fetchStores()
   }, [])
+
+  // 수정 다이얼로그 열기
+  const handleEditClick = (store: Store) => {
+    setStoreToEdit(store)
+    setEditDialogOpen(true)
+  }
+
+  // 수정 성공 후 처리
+  const handleUpdateSuccess = (updatedStore: Store) => {
+    setStores((prevStores) =>
+      prevStores.map((store) => (store._id === updatedStore._id ? updatedStore : store))
+    )
+    setStoreToEdit(null)
+  }
 
   // 삭제 다이얼로그 열기
   const handleDeleteClick = (store: Store) => {
@@ -105,6 +126,7 @@ export default function StoresManage() {
       store.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       store.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
       store.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      store.storeId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (store.tags && store.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase())))
   )
 
@@ -194,7 +216,7 @@ export default function StoresManage() {
                       })()}
                     </TableCell>
                     <TableCell className='text-center text-sm'>{store.since}</TableCell>
-                    <TableCell className='text-center'>{store._id}</TableCell>
+                    <TableCell className='text-center text-xs font-mono'>{store.storeId}</TableCell>
                     <TableCell className='text-center'>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -204,12 +226,10 @@ export default function StoresManage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align='end'>
-                          <Link href={`/admin/stores/edit/${store._id}`}>
-                            <DropdownMenuItem>
-                              <FileEdit className='h-4 w-4' />
-                              수정
-                            </DropdownMenuItem>
-                          </Link>
+                          <DropdownMenuItem onClick={() => handleEditClick(store)}>
+                            <FileEdit className='h-4 w-4' />
+                            수정
+                          </DropdownMenuItem>
                           <DropdownMenuItem
                             className='text-destructive focus:text-destructive'
                             onClick={() => handleDeleteClick(store)}
@@ -224,7 +244,7 @@ export default function StoresManage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={11} className='text-center py-12 text-muted-foreground'>
+                  <TableCell colSpan={8} className='text-center py-12 text-muted-foreground'>
                     <div className='flex flex-col items-center gap-2'>
                       <MapPin className='h-8 w-8 text-muted-foreground/50' />
                       <p>{searchTerm ? '검색 결과가 없습니다.' : '등록된 매장이 없습니다.'}</p>
@@ -243,6 +263,14 @@ export default function StoresManage() {
           </Table>
         </div>
       )}
+
+      {/* 수정 다이얼로그 */}
+      <DialogStoreEdit
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        store={storeToEdit}
+        onUpdateSuccess={handleUpdateSuccess}
+      />
 
       {/* 삭제 확인 다이얼로그 */}
       <DialogStoreDelete
