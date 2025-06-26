@@ -4,7 +4,6 @@ export const starbucksMenus = [
   { name: '국내 스타벅스', href: '/starbucks/domestic' },
   { name: '해외 스타벅스', href: '/starbucks/international' },
   { name: '신규 스타벅스', href: '/starbucks/new' },
-  { name: '매장 찾기', href: '/starbucks/store-locator' },
 ]
 
 export const largeCafeMenu = [
@@ -15,8 +14,7 @@ export const largeCafeMenu = [
 ]
 
 export const menuItems = [
-  // { name: '스타벅스', href: '/starbucks', hasDropdown: true, dropdownItems: starbucksMenus },
-  { name: '스타벅스', href: '/starbucks' },
+  { name: '스타벅스', href: '/starbucks', hasDropdown: true, dropdownItems: starbucksMenus },
   { name: '카페 뉴스', href: '/news' },
   { name: '매장 찾기', href: '/store-locator' },
 ]
