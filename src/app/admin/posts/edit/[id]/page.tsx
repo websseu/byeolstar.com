@@ -17,9 +17,11 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
   }
 
   return (
-    <section>
-      <h1 className='text-xl text-center font-nanum mb-12'>글 수정하기</h1>
-      <PostEditForm post={result.post} />
-    </section>
+    <main className='main__container'>
+      <section>
+        <h1 className='text-xl text-center font-nanum mb-12'>글 수정하기</h1>
+        <PostEditForm post={result.post} />
+      </section>
+    </main>
   )
 }

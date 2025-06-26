@@ -122,12 +122,7 @@ export default function DialogSignin({ open, onOpenChange }: DialogSigninProps) 
                 />
 
                 <div className='text-center w-full'>
-                  <Button
-                    type='submit'
-                    size='lg'
-                    className='w-full'
-                    disabled={form.formState.isSubmitting}
-                  >
+                  <Button type='submit' className='w-full' disabled={form.formState.isSubmitting}>
                     {form.formState.isSubmitting ? '로그인 중...' : '로그인'}
                   </Button>
                 </div>

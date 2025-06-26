@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import Link from 'next/link'
 import {
   Table,
   TableBody,
@@ -42,6 +41,7 @@ import { Badge } from '../ui/badge'
 import { getStoresPaginated } from '@/lib/actions/store.action'
 import DialogStoreDelete from '../dialog/dialog-store-delete'
 import DialogStoreEdit from '../dialog/dialog-store-edit'
+import DialogStoreAdd from '../dialog/dialog-store-add'
 
 interface Store {
   _id: string
@@ -88,6 +88,9 @@ export default function StoresManage() {
   // 수정 다이얼로그 상태
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [storeToEdit, setStoreToEdit] = useState<Store | null>(null)
+
+  // 추가 다이얼로그 상태
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
 
   // 검색어 디바운싱
   useEffect(() => {
@@ -137,6 +140,19 @@ export default function StoresManage() {
   // 페이지 이동
   const goToPage = (page: number) => {
     setCurrentPage(page)
+  }
+
+  // 추가 다이얼로그 열기
+  const handleAddClick = () => {
+    setAddDialogOpen(true)
+  }
+
+  // 추가 성공 후 처리
+  const handleAddSuccess = (newStore: Store) => {
+    setStores((prevStores) => [newStore, ...prevStores])
+    // 첫 페이지로 이동하여 새로 추가된 매장을 보여줌
+    setCurrentPage(1)
+    fetchStores()
   }
 
   // 수정 다이얼로그 열기
@@ -218,7 +234,7 @@ export default function StoresManage() {
     <div className='space-y-4'>
       <div className='flex justify-between items-center'>
         {/* 검색 및 필터 */}
-        <div className='flex items-center gap-4'>
+        <div className='flex items-center gap-2'>
           <div className='relative w-80'>
             <Search className='absolute left-3 top-3 h-4 w-4 text-muted-foreground' />
             <Input
@@ -259,6 +275,9 @@ export default function StoresManage() {
             {isLoading ? <Loader2 className='h-4 w-4 animate-spin mr-2' /> : null}
             새로고침
           </Button>
+          <Button onClick={handleAddClick} variant='default'>
+            매장 추가
+          </Button>
         </div>
       </div>
 
@@ -286,6 +305,7 @@ export default function StoresManage() {
                   <TableHead>지역</TableHead>
                   <TableHead className='max-w-[200px]'>주소</TableHead>
                   <TableHead>주차</TableHead>
+                  <TableHead className='max-w-[120px]'>태그</TableHead>
                   <TableHead>개점일</TableHead>
                   <TableHead>스토어ID</TableHead>
                   <TableHead className='w-[80px]'>관리</TableHead>
@@ -320,6 +340,35 @@ export default function StoresManage() {
                           )
                         })()}
                       </TableCell>
+                      <TableCell className='max-w-[120px]'>
+                        <div className='flex flex-wrap gap-1'>
+                          {store.tags && store.tags.length > 0 ? (
+                            <>
+                              {store.tags.slice(0, 3).map((tag, tagIndex) => (
+                                <Badge
+                                  key={tagIndex}
+                                  variant='secondary'
+                                  className='text-xs px-2 py-0.5'
+                                  title={tag}
+                                >
+                                  #{tag}
+                                </Badge>
+                              ))}
+                              {store.tags.length > 3 && (
+                                <Badge
+                                  variant='secondary'
+                                  className='text-xs px-2 py-0.5'
+                                  title={`추가 태그: ${store.tags.slice(3).join(', ')}`}
+                                >
+                                  +{store.tags.length - 3}
+                                </Badge>
+                              )}
+                            </>
+                          ) : (
+                            <span className='text-xs text-muted-foreground'>-</span>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell className='text-center'>{store.since}</TableCell>
                       <TableCell className='text-center'>{store.storeId}</TableCell>
                       <TableCell className='text-center'>
@@ -349,16 +398,14 @@ export default function StoresManage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} className='text-center py-12 text-muted-foreground'>
+                    <TableCell colSpan={9} className='text-center py-12 text-muted-foreground'>
                       <div className='flex flex-col items-center gap-2'>
                         <MapPin className='h-8 w-8 text-muted-foreground/50' />
                         <p>{searchTerm ? '검색 결과가 없습니다.' : '등록된 매장이 없습니다.'}</p>
                         {!searchTerm && (
-                          <Link href='/admin/stores/create'>
-                            <Button variant='outline' size='sm'>
-                              <Plus className='h-4 w-4 mr-2' />첫 번째 매장 등록하기
-                            </Button>
-                          </Link>
+                          <Button variant='outline' size='sm' onClick={handleAddClick}>
+                            <Plus className='h-4 w-4 mr-2' />첫 번째 매장 등록하기
+                          </Button>
                         )}
                       </div>
                     </TableCell>
@@ -422,6 +469,13 @@ export default function StoresManage() {
           )}
         </>
       )}
+
+      {/* 추가 다이얼로그 */}
+      <DialogStoreAdd
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        onAddSuccess={handleAddSuccess}
+      />
 
       {/* 수정 다이얼로그 */}
       <DialogStoreEdit

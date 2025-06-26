@@ -1,7 +1,7 @@
 'use server'
 
 import Post from '../db/model/post.model'
-// import Store from '../db/model/store.model'
+import Store from '../db/model/store.model'
 import { revalidatePath } from 'next/cache'
 import { connectToDatabase } from '../db'
 import { IPostInput, IPostUpdateInput } from '../type'
@@ -10,7 +10,6 @@ import { Types } from 'mongoose'
 
 // createPost : 글 쓰기
 // getAllPosts : 모든 글 가져오기(관리자용)
-// getDomesticPosts : 국내 매장 글 가져오기
 // getPostBySlug : 슬러그로 글 가져오기
 // getPostById : ID로 글 가져오기
 // deletePost : 글 삭제하기
@@ -145,54 +144,6 @@ export async function getPostsPaginated(page = 1, limit = 10, searchQuery?: stri
     }
   }
 }
-
-// 국내 매장 글 가져오기
-// export async function getDomesticPosts(limit?: number) {
-//   try {
-//     // 데이터베이스 연결
-//     await connectToDatabase()
-
-//     // 먼저 Store 컬렉션 확인
-//     const storeCount = await Store.countDocuments()
-//     console.log(`Store 컬렉션에 ${storeCount}개의 문서가 있습니다.`)
-
-//     // Post 컬렉션 확인
-//     const postCount = await Post.countDocuments({ category: 'domestic', isPublished: true })
-//     console.log(`조건에 맞는 Post가 ${postCount}개 있습니다.`)
-
-//     // 국내 카테고리 발행된 게시글 조회
-//     let postsQuery = Post.find({
-//       category: 'domestic',
-//       isPublished: true,
-//     })
-//       .populate({
-//         path: 'storeId',
-//         select: 'name address location images tags parking since phone',
-//       })
-//       .sort({ createdAt: -1 })
-
-//     if (limit) {
-//       postsQuery = postsQuery.limit(limit)
-//     }
-
-//     const posts = await postsQuery.lean()
-
-//     // JSON 직렬화
-//     const serialized = JSON.parse(JSON.stringify(posts))
-
-//     return {
-//       success: true,
-//       posts: serialized,
-//     }
-//   } catch (error) {
-//     console.error('국내 포스트 조회 중 오류 발생:', error)
-
-//     return {
-//       success: false,
-//       error: '국내 매장 포스트를 불러오는 중 오류가 발생했습니다.',
-//     }
-//   }
-// }
 
 // 슬러그로 글 가져오기
 export async function getPostBySlug(slug: string) {
@@ -426,6 +377,99 @@ export async function incrementViews(slug: string) {
     return {
       success: false,
       error: '조회수 증가 중 오류가 발생했습니다.',
+    }
+  }
+}
+
+// 발행된 포스트 목록 가져오기 (사용자용) - Store 정보 포함
+export async function getPublishedPosts(
+  page = 1,
+  limit = 12,
+  searchQuery?: string,
+  category?: string
+) {
+  try {
+    await connectToDatabase()
+
+    const skip = (page - 1) * limit
+
+    // 조건부로 객체 구성
+    const searchCondition = {
+      isPublished: true,
+      ...(category && { category }),
+      ...(searchQuery && {
+        $or: [
+          { title: { $regex: searchQuery, $options: 'i' } },
+          { description: { $regex: searchQuery, $options: 'i' } },
+          { category: { $regex: searchQuery, $options: 'i' } },
+        ],
+      }),
+    }
+
+    // 총 개수 조회
+    const totalCount = await Post.countDocuments(searchCondition)
+
+    // 페이지네이션된 데이터 조회 - Store 정보 populate
+    const posts = await Post.find(searchCondition)
+      .populate({
+        path: 'storeId',
+        model: Store,
+        select: 'name address location images tags parking since phone storeId',
+      })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean()
+
+    // 페이지네이션 정보 계산
+    const totalPages = Math.ceil(totalCount / limit)
+    const hasNextPage = page < totalPages
+    const hasPrevPage = page > 1
+
+    return {
+      success: true,
+      posts: JSON.parse(JSON.stringify(posts)),
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalCount,
+        limit,
+        hasNextPage,
+        hasPrevPage,
+      },
+    }
+  } catch (error) {
+    console.error('발행된 포스트 조회 오류:', error)
+    return {
+      success: false,
+      error: '포스트 데이터를 불러오는데 실패했습니다.',
+    }
+  }
+}
+
+// 카테고리별 포스트 개수 조회
+export async function getPostCountsByCategory() {
+  try {
+    await connectToDatabase()
+
+    const counts = await Post.aggregate([
+      { $match: { isPublished: true } },
+      { $group: { _id: '$category', count: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
+    ])
+
+    return {
+      success: true,
+      counts: counts.reduce((acc, item) => {
+        acc[item._id] = item.count
+        return acc
+      }, {}),
+    }
+  } catch (error) {
+    console.error('카테고리별 포스트 개수 조회 오류:', error)
+    return {
+      success: false,
+      error: '카테고리 데이터를 불러오는데 실패했습니다.',
     }
   }
 }

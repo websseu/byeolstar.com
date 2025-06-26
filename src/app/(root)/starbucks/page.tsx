@@ -1,5 +1,5 @@
-import { Metadata } from 'next'
 import StarbucksPostsList from '@/components/starbucks/post-list'
+import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: '국내 스타벅스 매장 탐방 | 전국 특별한 스타벅스 매장들',
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   },
 }
 
-export default function HomePage() {
+export default function StarbucksPage() {
   return (
     <section>
       <div className='mb-8 text-center'>

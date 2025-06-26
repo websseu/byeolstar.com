@@ -1,20 +1,19 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Badge } from '../ui/badge'
-import { StoreIcon, X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog'
-import { updateStore } from '@/lib/actions/store.action'
+import { createStore } from '@/lib/actions/store.action'
 import type { IStoreInput } from '@/lib/type'
 import { StoreInputSchema } from '@/lib/validator'
+import { useState } from 'react'
 
-// Store 인터페이스
 interface StoreType {
   _id: string
   name: string
@@ -32,19 +31,13 @@ interface StoreType {
   updatedAt: string
 }
 
-interface DialogStoreEditProps {
+interface DialogStoreAddProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  store: StoreType | null
-  onUpdateSuccess: (updatedStore: StoreType) => void
+  onAddSuccess: (newStore: StoreType) => void
 }
 
-export default function DialogStoreEdit({
-  open,
-  onOpenChange,
-  store,
-  onUpdateSuccess,
-}: DialogStoreEditProps) {
+export default function DialogStoreAdd({ open, onOpenChange, onAddSuccess }: DialogStoreAddProps) {
   const [tagInput, setTagInput] = useState('')
   const [isComposing, setIsComposing] = useState(false)
 
@@ -67,47 +60,25 @@ export default function DialogStoreEdit({
 
   const tags = form.watch('tags') || []
 
-  // 매장 데이터가 변경될 때 폼 초기화
-  useEffect(() => {
-    if (store && open) {
-      form.reset({
-        name: store.name || '',
-        address: store.address || '',
-        location: store.location || '',
-        storeId: store.storeId || '',
-        latitude: store.latitude || 0,
-        longitude: store.longitude || 0,
-        parking: store.parking || '',
-        since: store.since || '',
-        phone: store.phone || '',
-        tags: store.tags || [],
-        images: store.images || [],
-      })
-      setTagInput('')
-    }
-  }, [store, open, form])
-
-  // 매장 정보 수정
   const onSubmit = async (data: IStoreInput) => {
-    if (!store) return
-
     try {
-      const result = await updateStore(store._id, data)
+      const result = await createStore(data)
 
       if (result.success) {
-        toast.success('매장 정보가 성공적으로 수정되었습니다.')
-        onUpdateSuccess(result.store)
+        toast.success('매장이 성공적으로 추가되었습니다.')
+        onAddSuccess(result.store)
         onOpenChange(false)
+        form.reset()
+        setTagInput('')
       } else {
-        toast.error(result.error || '매장 수정 중 오류가 발생했습니다.')
+        toast.error(result.error || '매장 추가 중 오류가 발생했습니다.')
       }
     } catch (error) {
-      console.error('매장 수정 중 오류:', error)
-      toast.error('매장 수정 중 오류가 발생했습니다.')
+      console.error('매장 추가 중 오류:', error)
+      toast.error('매장 추가 중 오류가 발생했습니다.')
     }
   }
 
-  // 태그 추가/제거
   const handleTagAdd = (newTag: string) => {
     const trimmed = newTag.trim()
     if (!trimmed) return
@@ -123,7 +94,6 @@ export default function DialogStoreEdit({
     form.setValue('tags', updated)
   }
 
-  // 다이얼로그 닫기 시 폼 초기화
   const handleDialogClose = (isOpen: boolean) => {
     if (!isOpen) {
       form.reset()
@@ -133,17 +103,14 @@ export default function DialogStoreEdit({
     onOpenChange(isOpen)
   }
 
-  if (!store) return null
-
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent className='sm:max-w-[600px] max-h-[80vh] overflow-y-auto'>
         <DialogHeader className='border-b pb-4 mb-2'>
           <DialogTitle className='flex items-center gap-2'>
-            <StoreIcon className='h-5 w-5' />
-            매장 정보 수정
+            <Plus className='h-5 w-5' />새 매장 추가
           </DialogTitle>
-          <DialogDescription>매장 정보를 수정하고 저장하세요.</DialogDescription>
+          <DialogDescription>새로운 매장 정보를 입력하고 저장하세요.</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -163,7 +130,6 @@ export default function DialogStoreEdit({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name='storeId'
@@ -253,7 +219,7 @@ export default function DialogStoreEdit({
               )}
             />
 
-            {/* 좌표 정보 */}
+            {/* 좌표 */}
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <FormField
                 control={form.control}
@@ -274,7 +240,6 @@ export default function DialogStoreEdit({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name='longitude'
@@ -351,7 +316,7 @@ export default function DialogStoreEdit({
                 취소
               </Button>
               <Button type='submit' disabled={form.formState.isSubmitting} className='flex-1'>
-                {form.formState.isSubmitting ? '수정 중...' : '수정 완료'}
+                {form.formState.isSubmitting ? '추가 중...' : '매장 추가'}
               </Button>
             </div>
           </form>

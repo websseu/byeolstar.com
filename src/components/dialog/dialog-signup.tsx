@@ -337,7 +337,7 @@ export default function DialogSignup({ open, onOpenChange }: DialogSignupProps) 
                   )}
                 />
 
-                <Button type='submit' className='w-full mt-6 mb-2' size='lg'>
+                <Button type='submit' className='w-full mt-6 mb-2'>
                   다음 단계
                 </Button>
               </form>
@@ -375,7 +375,6 @@ export default function DialogSignup({ open, onOpenChange }: DialogSignupProps) 
                     type='submit'
                     disabled={emailForm.formState.isSubmitting}
                     className='flex-1'
-                    size='lg'
                   >
                     <Send className='h-4 w-4 mr-1' />
                     {emailForm.formState.isSubmitting ? '인증 메일 발송 중...' : '인증 메일 발송'}
@@ -441,7 +440,6 @@ export default function DialogSignup({ open, onOpenChange }: DialogSignupProps) 
                     type='submit'
                     disabled={verificationForm.formState.isSubmitting}
                     className='flex-1'
-                    size='lg'
                   >
                     <Send className='h-4 w-4 mr-1' />
                     {verificationForm.formState.isSubmitting ? '인증 중...' : '인증 확인'}
@@ -518,7 +516,6 @@ export default function DialogSignup({ open, onOpenChange }: DialogSignupProps) 
                     type='submit'
                     disabled={userInfoForm.formState.isSubmitting}
                     className='flex-1'
-                    size='lg'
                   >
                     <UserPlus className='h-4 w-4 mr-1' />
                     {userInfoForm.formState.isSubmitting ? '회원가입 중...' : '회원가입 완료'}
