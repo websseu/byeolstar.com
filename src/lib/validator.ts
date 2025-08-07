@@ -124,10 +124,10 @@ export const PostInputSchema = z.object({
     .max(100, { message: '→ 슬러그는 최대 100자까지 가능합니다.' }),
   isPublished: z.boolean(),
   storeId: z.string().optional(),
-  numViews: z.coerce.number().min(0),
-  numLikes: z.coerce.number().min(0),
-  numFavorites: z.coerce.number().min(0),
-  numComments: z.coerce.number().min(0),
+  numViews: z.number().min(0),
+  numLikes: z.number().min(0),
+  numFavorites: z.number().min(0),
+  numComments: z.number().min(0),
 })
 
 // 글 업데이트용
@@ -147,40 +147,42 @@ export const StoreInputSchema = z.object({
     .max(100, { message: '→ 매장명은 최대 100자까지 가능합니다.' }),
   description: z
     .string()
-    .min(1, { message: '→ 매장 설명을 입력해주세요.' })
-    .max(500, { message: '→ 매장 설명은 최대 500자까지 가능합니다.' }),
+    .max(500, { message: '→ 매장 설명은 최대 500자까지 가능합니다.' })
+    .optional(),
   address: z
     .string()
-    .min(1, { message: '→ 주소를 입력해주세요.' })
-    .max(200, { message: '→ 주소는 최대 200자까지 가능합니다.' }),
+    .max(200, { message: '→ 주소는 최대 200자까지 가능합니다.' })
+    .optional(),
   location: z
     .string()
-    .min(1, { message: '→ 지역을 입력해주세요.' })
-    .max(50, { message: '→ 지역은 최대 50자까지 가능합니다.' }),
+    .max(50, { message: '→ 지역은 최대 50자까지 가능합니다.' })
+    .optional(),
   latitude: z
     .number()
     .min(-90, { message: '→ 위도는 -90에서 90 사이의 값이어야 합니다.' })
-    .max(90, { message: '→ 위도는 -90에서 90 사이의 값이어야 합니다.' }),
+    .max(90, { message: '→ 위도는 -90에서 90 사이의 값이어야 합니다.' })
+    .optional(),
   longitude: z
     .number()
     .min(-180, { message: '→ 경도는 -180에서 180 사이의 값이어야 합니다.' })
-    .max(180, { message: '→ 경도는 -180에서 180 사이의 값이어야 합니다.' }),
+    .max(180, { message: '→ 경도는 -180에서 180 사이의 값이어야 합니다.' })
+    .optional(),
   parking: z
     .string()
-    .min(1, { message: '→ 주차 정보를 입력해주세요.' })
-    .max(300, { message: '→ 주차 정보는 최대 300자까지 가능합니다.' }),
+    .max(300, { message: '→ 주차 정보는 최대 300자까지 가능합니다.' })
+    .optional(),
   directions: z
     .string()
-    .min(1, { message: '→ 오시는길 정보를 입력해주세요.' })
-    .max(300, { message: '→ 오시는길 정보는 최대 300자까지 가능합니다.' }),
+    .max(500, { message: '→ 오시는길 정보는 최대 500자까지 가능합니다.' })
+    .optional(),
   since: z
     .string()
-    .min(1, { message: '→ 오픈일을 입력해주세요.' })
-    .max(20, { message: '→ 오픈일은 최대 20자까지 가능합니다.' }),
+    .max(20, { message: '→ 오픈일은 최대 20자까지 가능합니다.' })
+    .optional(),
   phone: z
     .string()
-    .min(1, { message: '→ 전화번호를 입력해주세요.' })
-    .max(20, { message: '→ 전화번호는 최대 20자까지 가능합니다.' }),
+    .max(20, { message: '→ 전화번호는 최대 20자까지 가능합니다.' })
+    .optional(),
   tags: z.array(z.string()).optional(),
   services: z.array(z.string()).optional(),
   facilities: z.array(z.string()).optional(),

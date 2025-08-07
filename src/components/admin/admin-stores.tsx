@@ -29,6 +29,7 @@ import {
 } from '../ui/table'
 import AdminPagination from './admin-pagination'
 import DialogStoreDetail from '../dialog/dialog-store-detail'
+import DialogStoreEdit from '../dialog/dialog-store-edit'
 
 export default function AdminStores() {
   const [stores, setStores] = useState<IStore[]>([])
@@ -44,7 +45,11 @@ export default function AdminStores() {
 
   // 상세정보
   const [detailOpen, setDetailOpen] = useState(false)
-  const [selectedStore, setSelectedStore] = useState<IStore | null>(null)
+  const [detailedStore, setDetailedStore] = useState<IStore | null>(null)
+
+  // 수정하기
+  const [editOpen, setEditOpen] = useState(false)
+  const [editedStore, setEditedStore] = useState<IStore | null>(null)
 
   // 데이터 가져오기
   // const fetchStores = useCallback(async () => {
@@ -101,13 +106,22 @@ export default function AdminStores() {
   // 상세정보 보기
   const handleDetailClick = (store: IStore) => {
     setDetailOpen(true)
-    setSelectedStore(store)
+    setDetailedStore(store)
   }
 
   // 수정하기
   const handleEditClick = (store: IStore) => {
-    console.log('수정하기:', store)
-    // TODO: 수정 페이지로 이동
+    setEditOpen(true)
+    setEditedStore(store)
+  }
+
+  // 게시글 수정 완료 처리(부분로딩)
+  const handleEditUpdate = (updatedStore: IStore) => {
+    setStores((prev) =>
+      prev.map((store) =>
+        store._id === updatedStore._id ? updatedStore : store
+      )
+    )
   }
 
   // 삭제하기
@@ -366,7 +380,15 @@ export default function AdminStores() {
       <DialogStoreDetail
         open={detailOpen}
         onOpenChange={setDetailOpen}
-        store={selectedStore}
+        store={detailedStore}
+      />
+
+      {/* 수정하기 다이얼로그 */}
+      <DialogStoreEdit
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        store={editedStore}
+        onSuccess={handleEditUpdate}
       />
     </>
   )

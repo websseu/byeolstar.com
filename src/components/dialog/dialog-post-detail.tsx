@@ -49,6 +49,7 @@ export default function DialogPostDetail({
             게시글 상세 정보입니다.
           </DialogDescription>
         </DialogHeader>
+
         <div className='space-y-3 text-sm max-h-[60vh] overflow-y-auto'>
           {/* 제목 */}
           <div className='flex items-center gap-2'>

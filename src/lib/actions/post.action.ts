@@ -1,17 +1,18 @@
 'use server'
 
 import { connectToDatabase } from '../db'
-import { IPostInput } from '../type'
-import { PostInputSchema } from '../validator'
+import { IPostInput, IPostUpdateInput } from '../type'
+import { PostInputSchema, PostUpdateSchema } from '../validator'
 import { revalidatePath } from 'next/cache'
 import Post from '../db/models/post.model'
 
 // 1. createPost : 게시글 생성하기
 // 2. getAllPosts : 모든글 가져오기
 // 3. getAllPostsPage : 모든글 가져오기(페이지, 검색)
+// 4. updatePost : 게시글 수정하기
+
 // 4. getPostBySlug : 슬러그로 게시글 가져오기
 // 5. deletePost : 게시글 삭제하기
-// 6. updatePost : 게시글 수정하기
 // 7. incrementViews : 조회수 증가
 
 // 게시글 생성하기
@@ -135,6 +136,76 @@ export async function getAllPostsPage(
     return {
       success: false,
       error: '포스트 데이터를 불러오는데 실패했습니다.',
+    }
+  }
+}
+
+// 게시글 수정하기
+export async function updatePost(data: IPostUpdateInput) {
+  try {
+    // 데이터베이스 연결
+    await connectToDatabase()
+
+    // 입력 데이터 유효성 검사
+    const validatedData = PostUpdateSchema.parse(data)
+
+    // 게시글 존재 확인
+    const existingPost = await Post.findById(validatedData.id)
+    if (!existingPost) {
+      return {
+        success: false,
+        error: '수정할 게시글을 찾을 수 없습니다.',
+      }
+    }
+
+    // 슬러그 중복 확인 (자신 제외)
+    if (validatedData.slug && validatedData.slug !== existingPost.slug) {
+      const duplicateSlug = await Post.findOne({
+        slug: validatedData.slug,
+        _id: { $ne: validatedData.id },
+      })
+      if (duplicateSlug) {
+        return {
+          success: false,
+          error: '이미 사용 중인 슬러그입니다. 다른 슬러그를 사용해주세요.',
+        }
+      }
+    }
+
+    // 게시글 업데이트
+    const updatedPost = await Post.findByIdAndUpdate(
+      validatedData.id,
+      {
+        $set: {
+          title: validatedData.title,
+          slug: validatedData.slug,
+          storeId: validatedData.storeId,
+          numViews: validatedData.numViews,
+          numLikes: validatedData.numLikes,
+          numFavorites: validatedData.numFavorites,
+          numComments: validatedData.numComments,
+          isPublished: validatedData.isPublished,
+          updatedAt: new Date(),
+        },
+      },
+      { new: true, runValidators: true }
+    )
+
+    // 캐시 갱신
+    revalidatePath('/admin')
+
+    // 성공 응답 반환
+    return {
+      success: true,
+      message: '게시글이 성공적으로 수정되었습니다.',
+      post: JSON.parse(JSON.stringify(updatedPost)),
+    }
+  } catch (error) {
+    console.error('게시글 수정 중 오류 발생:', error)
+    // 실패 응답 반환
+    return {
+      success: false,
+      error: '게시글 수정 중 오류가 발생했습니다.',
     }
   }
 }

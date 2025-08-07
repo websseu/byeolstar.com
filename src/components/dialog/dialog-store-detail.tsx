@@ -53,38 +53,59 @@ export default function DialogStoreDetail({
             스토어 상세 정보입니다.
           </DialogDescription>
         </DialogHeader>
+
         <div className='space-y-3 text-sm max-h-[60vh] overflow-y-auto'>
           {/* 매장명 */}
           <div className='flex items-center gap-2'>
-            <Store className='h-4 w-4 text-green-600 flex-shrink-0' />
-            <div className='min-w-0 flex-1'>
-              <span>매장명 : </span>
-              <span>{store.name}</span>
-            </div>
+            <Store className='h-4 w-4 text-green-600' />
+            <span>매장명 : </span>
+            <span>{store.name}</span>
           </div>
-
           <Separator />
 
           {/* 스토어 ID */}
           <div className='flex items-center gap-2'>
-            <Hash className='h-4 w-4 text-blue-600 flex-shrink-0' />
-            <div className='min-w-0 flex-1'>
-              <span>스토어 ID : </span>
-              <span>{store.storeId}</span>
-            </div>
+            <Hash className='h-4 w-4 text-blue-600' />
+            <span>스토어 ID : </span>
+            <span>{store.storeId}</span>
           </div>
-
           <Separator />
 
-          {/* 설명 */}
+          {/* 지역 */}
           <div className='flex items-center gap-2'>
-            <FileText className='h-4 w-4 text-orange-600 flex-shrink-0' />
-            <div className='min-w-0 flex-1'>
-              <span>설명 : </span>
-              <span>{store.description || '-'}</span>
-            </div>
+            <Building className='h-4 w-4 text-purple-600' />
+            <span>지역 : </span>
+            <span>{store.location || '-'}</span>
           </div>
+          <Separator />
 
+          {/* 전화번호 */}
+          <div className='flex items-center gap-2'>
+            <Phone className='h-4 w-4 text-green-600' />
+            <span>전화번호 : </span>
+            <span>{store.phone || '-'}</span>
+          </div>
+          <Separator />
+
+          {/* 위도/경도 */}
+          <div className='flex items-center gap-2'>
+            <Navigation className='h-4 w-4 text-indigo-600' />
+            <span>위도 : </span>
+            <span>{store.latitude || '-'}</span>
+          </div>
+          <div className='flex items-center gap-2'>
+            <Navigation className='h-4 w-4 text-indigo-600' />
+            <span>경도:</span>
+            <span>{store.longitude || '-'}</span>
+          </div>
+          <Separator />
+
+          {/* 오픈일 */}
+          <div className='flex items-center gap-2'>
+            <Calendar className='h-4 w-4 text-yellow-600' />
+            <span>오픈일 : </span>
+            <span>{store.since || '-'}</span>
+          </div>
           <Separator />
 
           {/* 주소 */}
@@ -95,56 +116,16 @@ export default function DialogStoreDetail({
               <span>{store.address || '-'}</span>
             </div>
           </div>
-
           <Separator />
 
-          {/* 지역 */}
+          {/* 설명 */}
           <div className='flex items-center gap-2'>
-            <Building className='h-4 w-4 text-purple-600 flex-shrink-0' />
+            <FileText className='h-4 w-4 text-orange-600 flex-shrink-0' />
             <div className='min-w-0 flex-1'>
-              <span>지역 : </span>
-              <span>{store.location || '-'}</span>
+              <span>설명 : </span>
+              <span>{store.description || '-'}</span>
             </div>
           </div>
-
-          <Separator />
-
-          {/* 위도/경도 */}
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='flex items-center gap-2'>
-              <Navigation className='h-4 w-4 text-indigo-600' />
-              <span>위도 : </span>
-              <span>{store.latitude || '-'}</span>
-            </div>
-            <div className='flex items-center gap-2'>
-              <Navigation className='h-4 w-4 text-indigo-600' />
-              <span>경도:</span>
-              <span>{store.longitude || '-'}</span>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* 전화번호 */}
-          <div className='flex items-center gap-2'>
-            <Phone className='h-4 w-4 text-green-600 flex-shrink-0' />
-            <div className='min-w-0 flex-1'>
-              <span>전화번호 : </span>
-              <span>{store.phone || '-'}</span>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* 오픈일 */}
-          <div className='flex items-center gap-2'>
-            <Calendar className='h-4 w-4 text-yellow-600 flex-shrink-0' />
-            <div className='min-w-0 flex-1'>
-              <span>오픈일 : </span>
-              <span>{store.since || '-'}</span>
-            </div>
-          </div>
-
           <Separator />
 
           {/* 주차 정보 */}
@@ -155,7 +136,6 @@ export default function DialogStoreDetail({
               <span>{store.parking || '-'}</span>
             </div>
           </div>
-
           <Separator />
 
           {/* 오시는길 */}
@@ -166,14 +146,15 @@ export default function DialogStoreDetail({
               <span>{store.directions || '-'}</span>
             </div>
           </div>
-
           <Separator />
 
           {/* 태그 */}
           <div className='flex items-center gap-2'>
             <Tag className='h-4 w-4 text-indigo-600 flex-shrink-0' />
             <div className='min-w-0 flex-1 flex items-center'>
-              <span className='font-medium text-gray-700'>태그 : </span>
+              <span className='font-medium text-gray-700 min-w-[30px]'>
+                태그 :{' '}
+              </span>
               <div className='ml-2 flex flex-wrap gap-1'>
                 {store.tags && store.tags.length > 0 ? (
                   store.tags.map((tag, index) => (
@@ -190,14 +171,15 @@ export default function DialogStoreDetail({
               </div>
             </div>
           </div>
-
           <Separator />
 
           {/* 서비스 */}
           <div className='flex items-center gap-2'>
             <Wrench className='h-4 w-4 text-orange-600 flex-shrink-0' />
             <div className='min-w-0 flex-1 flex items-center'>
-              <span className='font-medium text-gray-700'>서비스 : </span>
+              <span className='font-medium text-gray-700 min-w-[50px]'>
+                서비스 :{' '}
+              </span>
               <div className='ml-2 flex flex-wrap gap-1'>
                 {store.services && store.services.length > 0 ? (
                   store.services.map((service, index) => (
@@ -214,14 +196,15 @@ export default function DialogStoreDetail({
               </div>
             </div>
           </div>
-
           <Separator />
 
           {/* 편의시설 */}
           <div className='flex items-center gap-2'>
             <Building className='h-4 w-4 text-green-600 flex-shrink-0' />
             <div className='min-w-0 flex-1 flex items-center'>
-              <span className='font-medium text-gray-700'>편의시설 : </span>
+              <span className='font-medium text-gray-700 min-w-[60px]'>
+                편의시설 :{' '}
+              </span>
               <div className='ml-2 flex flex-wrap gap-1'>
                 {store.facilities && store.facilities.length > 0 ? (
                   store.facilities.map((facility, index) => (
@@ -238,7 +221,6 @@ export default function DialogStoreDetail({
               </div>
             </div>
           </div>
-
           <Separator />
 
           {/* 이미지 */}
@@ -274,7 +256,6 @@ export default function DialogStoreDetail({
               </div>
             </div>
           </div>
-
           <Separator />
 
           {/* 날짜 정보 */}

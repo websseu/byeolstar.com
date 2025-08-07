@@ -30,6 +30,7 @@ import {
 } from '../ui/table'
 import AdminPagination from './admin-pagination'
 import DialogPostDetail from '../dialog/dialog-post-detail'
+import DialogPostEdit from '../dialog/dialog-post-edit'
 
 export default function AdminPosts() {
   const [posts, setPosts] = useState<IPost[]>([])
@@ -45,7 +46,11 @@ export default function AdminPosts() {
 
   // 상세정보
   const [detailOpen, setDetailOpen] = useState(false)
-  const [selectedPost, setSelectedPost] = useState<IPost | null>(null)
+  const [detailedPost, setDetailedPost] = useState<IPost | null>(null)
+
+  // 수정하기
+  const [editOpen, setEditOpen] = useState(false)
+  const [editedPost, setEditedPost] = useState<IPost | null>(null)
 
   // 데이터 가져오기
   // const fetchPosts = useCallback(async () => {
@@ -101,13 +106,22 @@ export default function AdminPosts() {
   // 상세정보 보기
   const handleDetailClick = (post: IPost) => {
     setDetailOpen(true)
-    setSelectedPost(post)
+    setDetailedPost(post)
   }
 
   // 수정하기
   const handleEditClick = (post: IPost) => {
-    console.log('수정하기:', post)
-    // TODO: 수정 페이지로 이동
+    setEditOpen(true)
+    setEditedPost(post)
+  }
+
+  // 게시글 수정 완료 처리(부분로딩)
+  const handleEditUpdate = (updatedPost: IPost) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post._id === updatedPost._id ? updatedPost : post
+      )
+    )
   }
 
   // 삭제하기
@@ -353,7 +367,15 @@ export default function AdminPosts() {
       <DialogPostDetail
         open={detailOpen}
         onOpenChange={setDetailOpen}
-        post={selectedPost}
+        post={detailedPost}
+      />
+
+      {/* 수정하기 다이얼로그 */}
+      <DialogPostEdit
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        post={editedPost}
+        onSuccess={handleEditUpdate}
       />
     </>
   )

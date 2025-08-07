@@ -1,17 +1,18 @@
 'use server'
 
 import { connectToDatabase } from '../db'
-import { IStoreInput } from '../type'
-import { StoreInputSchema } from '../validator'
+import { IStoreInput, IStoreUpdateInput } from '../type'
+import { StoreInputSchema, StoreUpdateSchema } from '../validator'
 import { revalidatePath } from 'next/cache'
 import Store from '../db/models/store.model'
 
 // 1. createStore : 스토어 생성하기
 // 2. getAllStores : 모든 스토어 가져오기
 // 3. getAllStoresPage : 모든 스토어 가져오기(페이지, 검색)
+// 4. updateStore : 스토어 수정하기
+
 // 4. getStoreBySlug : 슬러그로 스토어 가져오기
 // 5. deleteStore : 스토어 삭제하기
-// 6. updateStore : 스토어 수정하기
 // 7. incrementStoreViews : 조회수 증가
 
 // 스토어 생성하기
@@ -139,6 +140,86 @@ export async function getAllStoresPage(
     return {
       success: false,
       error: '스토어 데이터를 불러오는데 실패했습니다.',
+    }
+  }
+}
+
+// 스토어 수정하기
+export async function updateStore(data: IStoreUpdateInput) {
+  try {
+    // 데이터베이스 연결
+    await connectToDatabase()
+
+    // 입력 데이터 유효성 검사
+    const validatedData = StoreUpdateSchema.parse(data)
+
+    // 스토어 존재 확인
+    const existingStore = await Store.findById(validatedData.id)
+    if (!existingStore) {
+      return {
+        success: false,
+        error: '수정하려는 스토어를 찾을 수 없습니다.',
+      }
+    }
+
+    // 스토어 ID 중복 확인 (자신 제외)
+    if (
+      validatedData.storeId &&
+      validatedData.storeId !== existingStore.storeId
+    ) {
+      const duplicateStore = await Store.findOne({
+        storeId: validatedData.storeId,
+        _id: { $ne: validatedData.id },
+      })
+      if (duplicateStore) {
+        return {
+          success: false,
+          error: '이미 사용 중인 스토어 ID입니다. 다른 ID를 사용해주세요.',
+        }
+      }
+    }
+
+    // 스토어 업데이트
+    const updatedStore = await Store.findByIdAndUpdate(
+      validatedData.id,
+      {
+        $set: {
+          storeId: validatedData.storeId,
+          name: validatedData.name,
+          description: validatedData.description,
+          address: validatedData.address,
+          location: validatedData.location,
+          latitude: validatedData.latitude,
+          longitude: validatedData.longitude,
+          parking: validatedData.parking,
+          directions: validatedData.directions,
+          since: validatedData.since,
+          phone: validatedData.phone,
+          tags: validatedData.tags,
+          services: validatedData.services,
+          facilities: validatedData.facilities,
+          images: validatedData.images,
+          updatedAt: new Date(),
+        },
+      },
+      { new: true, runValidators: true }
+    )
+
+    // 캐시 갱신
+    revalidatePath('/admin')
+
+    // 성공 응답 반환
+    return {
+      success: true,
+      message: '스토어가 성공적으로 수정되었습니다.',
+      store: JSON.parse(JSON.stringify(updatedStore)),
+    }
+  } catch (error) {
+    console.error('스토어 수정 중 오류 발생:', error)
+    // 실패 응답 반환
+    return {
+      success: false,
+      error: '스토어 수정 중 오류가 발생했습니다.',
     }
   }
 }
